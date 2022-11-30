@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="refresh" content="240">
+    <style>
+        @font-face {
+            font-family: "play";
+            src: url("/play.ttf");
+        }
+        @font-face {
+            font-family: "faustina";
+            src: url("/faustina.ttf");
+        }
+
+        h1, aside {
+            font-family: "play";
+            margin-bottom: 10px;
+        }
+
+        h1 { font-size: 44pt; line-height: 1; }
+        aside { font-size: 16pt; }
+
+        .match {
+            font-family: 'play';
+            font-size: smaller;
+        }
+
+        old-aside {
+            position: absolute;
+            top: 0;
+            right: 0;
+            text-align: center;
+            width: 70px;
+        }
+
+        .widget {
+            width: 250px;
+            position: relative;
+        }
+        .map {
+            text-align: center;
+            color: #808080;
+            padding-bottom: 4px;
+            font-family: 'EuroStyle';
+        }
+
+        .race-T {
+            color:#6495ed;
+            font-family: 'EuroStyle';
+            font-size: larger;
+        }
+        .race-P {
+            color:lightgreen;
+            font-family: 'EuroStyle';
+            font-size: larger;
+        }
+        .race-Z {
+            color:indianred;
+            font-family: 'EuroStyle';
+            font-size: larger;
+        }
+
+        .match {
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 4px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+    </style>
+
+<body>
+    <div class="widget">
+        <aside>LAST MATCHES</aside>
+        <% matches.forEach((m) => { %>
+        <div class="match">
+            ${m.winner.name} <span class="race-${m.winner.race}">${m.winner.race}</span> &gt; <span class="race-${m.loser.race}">${m.loser.race}</span> ${m.loser.name}
+            <br />
+            <span class="map">${m.len} on ${m.map}</span>
+        </div>
+        <% }) %>
+    </div>
+</body>
+
+</html>
