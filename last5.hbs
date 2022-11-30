@@ -4,14 +4,6 @@
 <head>
     <meta http-equiv="refresh" content="240">
     <style>
-        @font-face {
-            font-family: "play";
-            src: url("/play.ttf");
-        }
-        @font-face {
-            font-family: "faustina";
-            src: url("/faustina.ttf");
-        }
 
         h1, aside {
             font-family: "play";
@@ -73,13 +65,12 @@
 <body>
     <div class="widget">
         <aside>LAST MATCHES</aside>
-        <% matches.forEach((m) => { %>
         <div class="match">
-            ${m.winner.name} <span class="race-${m.winner.race}">${m.winner.race}</span> &gt; <span class="race-${m.loser.race}">${m.loser.race}</span> ${m.loser.name}
+            {{winner.name}} <span class="race-{{race winner.race}}">{{race winner.race}}</span>
+            &gt; <span class="race-{{race loser.race}}">{{race loser.race}}</span> {{loser.name}}
             <br />
-            <span class="map">${m.len} on ${m.map}</span>
+            <span class="map">{{len}} on {{map}}</span>
         </div>
-        <% }) %>
     </div>
 </body>
 

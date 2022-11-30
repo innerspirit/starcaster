@@ -15,7 +15,8 @@ import (
 	_ "nuxui.org/nuxui/ui"
 
 	"github.com/aymerick/raymond"
-	"github.com/icza/screp/rep"
+	"github.com/davecgh/go-spew/spew"
+	screp "github.com/icza/screp/rep"
 	"github.com/icza/screp/repparser"
 )
 
@@ -33,6 +34,10 @@ func main() {
 		ReadTimeout:  30 * time.Second,
 	}
 
+	raymond.RegisterHelper("race", func(r string, options *raymond.Options) string {
+		return r[0:1]
+	})
+
 	go func() {
 		fmt.Println("server started on ", addr)
 		err := srv.ListenAndServe()
@@ -44,7 +49,7 @@ func main() {
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
-	getReplayData()
+	res := getReplayData()
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(200)
 	//fmt.Fprintf(w, "{ \"Version\": %q}", data)
@@ -53,12 +58,12 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, err)
 	} else {
-		result := tpl.MustExec(nil)
+		result := tpl.MustExec(res)
 		fmt.Fprint(w, result)
 	}
 }
 
-func getReplayData() string {
+func getReplayData() map[string]interface{} {
 	cfg := repparser.Config{
 		Commands: true,
 		MapData:  true,
@@ -69,11 +74,23 @@ func getReplayData() string {
 		os.Exit(1)
 	}
 	var destination = os.Stdout
-	return getEngine(destination, r)
+	return compileReplayInfo(destination, r)
 }
 
-func getEngine(out *os.File, rep *rep.Replay) string {
+func compileReplayInfo(out *os.File, rep *screp.Replay) map[string]interface{} {
 	rep.Compute()
+	//fmt.Printf("%+v\n", rep)
+	var winner, loser *screp.Player
+	winnerID := rep.Computed.WinnerTeam
+	for _, p := range rep.Header.Players {
+		if p.ID == winnerID {
+			winner = p
+		} else {
+			loser = p
+		}
+	}
+	spew.Dump(winner)
+	spew.Dump(loser)
 
 	engine := rep.Header.Engine.ShortName
 	if rep.Header.Version != "" {
@@ -84,5 +101,10 @@ func getEngine(out *os.File, rep *rep.Replay) string {
 		mapName = rep.Header.Map // But revert to Header.Map if the latter is not available.
 	}
 
-	return engine
+	ctx := map[string]interface{}{
+		"winner": winner,
+		"loser":  loser,
+	}
+
+	return ctx
 }
