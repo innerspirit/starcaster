@@ -6,9 +6,11 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"nuxui.org/nuxui/nux"
@@ -20,7 +22,7 @@ import (
 	"github.com/icza/screp/repparser"
 )
 
-const repPath = "C:\\Users\\Chris\\Documents\\StarCraft\\Maps\\Replays\\LastReplay.rep"
+const repPath = "C:\\Users\\Chris\\Documents\\StarCraft\\Maps\\Replays\\"
 
 func main() {
 	m := http.NewServeMux()
@@ -35,6 +37,9 @@ func main() {
 	}
 
 	raymond.RegisterHelper("race", func(r string, options *raymond.Options) string {
+		if len(r) == 0 {
+			return ""
+		}
 		return r[0:1]
 	})
 
@@ -49,7 +54,8 @@ func main() {
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
-	res := getReplayData()
+	res := getTopReplaysData()
+
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(200)
 	//fmt.Fprintf(w, "{ \"Version\": %q}", data)
@@ -58,17 +64,43 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Fprint(w, err)
 	} else {
-		result := tpl.MustExec(res)
+		ctx := map[string]interface{}{
+			"matches": res,
+		}
+		spew.Dump(ctx)
+		result := tpl.MustExec(ctx)
 		fmt.Fprint(w, result)
 	}
 }
 
-func getReplayData() map[string]interface{} {
+func getTopReplaysData() []map[string]interface{} {
+	var rdlist []map[string]interface{}
+	cnt := 0
+	w := func(s string, d fs.DirEntry, err error) error {
+		if cnt > 4 {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			cnt++
+			repdata := getReplayData(s)
+			rdlist = append(rdlist, repdata)
+		}
+		return nil
+	}
+
+	filepath.WalkDir(repPath, w)
+	return rdlist
+}
+
+func getReplayData(fileName string) map[string]interface{} {
 	cfg := repparser.Config{
 		Commands: true,
 		MapData:  true,
 	}
-	r, err := repparser.ParseFileConfig(repPath, cfg)
+	r, err := repparser.ParseFileConfig(fileName, cfg)
 	if err != nil {
 		fmt.Printf("Failed to parse replay: %v\n", err)
 		os.Exit(1)
@@ -89,8 +121,6 @@ func compileReplayInfo(out *os.File, rep *screp.Replay) map[string]interface{} {
 			loser = p
 		}
 	}
-	spew.Dump(winner)
-	spew.Dump(loser)
 
 	engine := rep.Header.Engine.ShortName
 	if rep.Header.Version != "" {
