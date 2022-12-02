@@ -65,14 +65,14 @@
 <body>
     <div class="widget">
         <aside>LAST MATCHES</aside>
-        <div class="match">
-            {{#each matches}}
+        {{#each matches}}
+            <div class="match">
                 {{winner.name}} <span class="race-{{race winner.race}}">{{race winner.race}}</span>
                 &gt; <span class="race-{{race loser.race}}">{{race loser.race}}</span> {{loser.name}}
                 <br />
                 <span class="map">{{len}} on {{map}}</span>
-            {{/each}}
-        </div>
+            </div>
+        {{/each}}
     </div>
 </body>
 

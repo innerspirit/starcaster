@@ -6,11 +6,10 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+	"sort"
 	"time"
 
 	"nuxui.org/nuxui/nux"
@@ -22,7 +21,7 @@ import (
 	"github.com/icza/screp/repparser"
 )
 
-const repPath = "C:\\Users\\Chris\\Documents\\StarCraft\\Maps\\Replays\\"
+const repPath = "C:\\Users\\Chris\\Documents\\StarCraft\\Maps\\Replays\\AutoSave\\"
 
 func main() {
 	m := http.NewServeMux()
@@ -75,24 +74,57 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 
 func getTopReplaysData() []map[string]interface{} {
 	var rdlist []map[string]interface{}
-	cnt := 0
-	w := func(s string, d fs.DirEntry, err error) error {
-		if cnt > 4 {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			cnt++
-			repdata := getReplayData(s)
-			rdlist = append(rdlist, repdata)
-		}
-		return nil
-	}
 
-	filepath.WalkDir(repPath, w)
+	folder := getNewestFolder(repPath)
+	repfiles := getNewestFiles(repPath+folder, 5)
+	for _, fpath := range repfiles {
+		repdata := getReplayData(repPath + folder + "\\" + fpath)
+		rdlist = append(rdlist, repdata)
+	}
 	return rdlist
+}
+
+func getNewestFiles(path string, cnt int) []string {
+	list := []string{}
+	i := 0
+	fmt.Println("reading file " + path)
+	f, _ := os.Open(path)
+	fis, _ := f.Readdir(-1)
+	f.Close()
+	sort.Sort(ByModTime(fis))
+
+	for _, fi := range fis {
+		fmt.Println("found file " + fi.Name())
+		if i >= cnt {
+			fmt.Println("too many files")
+			break
+		}
+		if !fi.Mode().IsRegular() {
+			fmt.Println("not regular file")
+			continue
+		}
+		i++
+		list = append(list, fi.Name())
+	}
+	return list
+}
+
+func getNewestFolder(path string) string {
+	fmt.Println("reading folder " + path)
+	f, _ := os.Open(path)
+	fis, _ := f.Readdir(-1)
+	f.Close()
+	sort.Sort(ByModTime(fis))
+
+	for _, fi := range fis {
+		if fi.Mode().IsRegular() {
+			fmt.Println("not dir")
+			continue
+		}
+		fmt.Println("found dir " + fi.Name())
+		return fi.Name()
+	}
+	return ""
 }
 
 func getReplayData(fileName string) map[string]interface{} {
@@ -111,7 +143,6 @@ func getReplayData(fileName string) map[string]interface{} {
 
 func compileReplayInfo(out *os.File, rep *screp.Replay) map[string]interface{} {
 	rep.Compute()
-	//fmt.Printf("%+v\n", rep)
 	var winner, loser *screp.Player
 	winnerID := rep.Computed.WinnerTeam
 	for _, p := range rep.Header.Players {
@@ -131,10 +162,28 @@ func compileReplayInfo(out *os.File, rep *screp.Replay) map[string]interface{} {
 		mapName = rep.Header.Map // But revert to Header.Map if the latter is not available.
 	}
 
+	d := rep.Header.Duration()
+
 	ctx := map[string]interface{}{
 		"winner": winner,
 		"loser":  loser,
+		"len":    d.String(),
+		"map":    mapName,
 	}
 
 	return ctx
+}
+
+type ByModTime []os.FileInfo
+
+func (fis ByModTime) Len() int {
+	return len(fis)
+}
+
+func (fis ByModTime) Swap(i, j int) {
+	fis[i], fis[j] = fis[j], fis[i]
+}
+
+func (fis ByModTime) Less(i, j int) bool {
+	return fis[i].ModTime().After(fis[j].ModTime())
 }
