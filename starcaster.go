@@ -5,6 +5,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,7 +24,11 @@ import (
 
 const repPath = "C:\\Users\\Chris\\Documents\\StarCraft\\Maps\\Replays\\AutoSave\\"
 
+//go:embed last5.hbs
+var hbs string
+
 func main() {
+
 	m := http.NewServeMux()
 
 	m.HandleFunc("/", testHandler)
@@ -57,19 +62,14 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(200)
-	//fmt.Fprintf(w, "{ \"Version\": %q}", data)
 
-	tpl, err := raymond.ParseFile("./last5.hbs")
-	if err != nil {
-		fmt.Fprint(w, err)
-	} else {
-		ctx := map[string]interface{}{
-			"matches": res,
-		}
-		spew.Dump(ctx)
-		result := tpl.MustExec(ctx)
-		fmt.Fprint(w, result)
+	tpl, _ := raymond.Parse(hbs)
+	ctx := map[string]interface{}{
+		"matches": res,
 	}
+	spew.Dump(ctx)
+	result := tpl.MustExec(ctx)
+	fmt.Fprint(w, result)
 }
 
 func getTopReplaysData() []map[string]interface{} {
