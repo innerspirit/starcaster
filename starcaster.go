@@ -7,12 +7,12 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"sort"
 	"time"
 
+	"nuxui.org/nuxui/log"
 	"nuxui.org/nuxui/nux"
 	_ "nuxui.org/nuxui/ui"
 
@@ -26,6 +26,14 @@ const repPath = "C:\\Users\\Chris\\Documents\\StarCraft\\Maps\\Replays\\AutoSave
 
 //go:embed last5.hbs
 var hbs string
+
+type Home interface {
+	nux.Component
+}
+
+type home struct {
+	*nux.ComponentBase
+}
 
 func main() {
 
@@ -50,11 +58,26 @@ func main() {
 	go func() {
 		fmt.Println("server started on ", addr)
 		err := srv.ListenAndServe()
-		log.Fatal(err)
+		log.Fatal("starcaster", "%s", err)
 	}()
 
 	nux.App().Init(manifest)
 	nux.App().Run()
+}
+
+func (me *home) layout() string {
+	return ""
+}
+
+func (me *home) style() string {
+	return ""
+}
+
+func NewHome(manifest nux.Attr) Home {
+	me := &home{}
+	me.ComponentBase = nux.NewComponentBase(me, manifest)
+	nux.InflateLayout(me, me.layout(), nux.InflateStyle(me.style()))
+	return me
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
