@@ -17,7 +17,6 @@ import (
 	_ "nuxui.org/nuxui/ui"
 
 	"github.com/aymerick/raymond"
-	"github.com/davecgh/go-spew/spew"
 	screp "github.com/icza/screp/rep"
 	"github.com/icza/screp/repparser"
 )
@@ -90,7 +89,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := map[string]interface{}{
 		"matches": res,
 	}
-	spew.Dump(ctx)
+	//spew.Dump(ctx)
 	result := tpl.MustExec(ctx)
 	fmt.Fprint(w, result)
 }
@@ -168,12 +167,17 @@ func compileReplayInfo(out *os.File, rep *screp.Replay) map[string]interface{} {
 	rep.Compute()
 	var winner, loser *screp.Player
 	winnerID := rep.Computed.WinnerTeam
+	hasWinner := (winnerID != 0)
+
 	for _, p := range rep.Header.Players {
-		if p.ID == winnerID {
+		if p.Team == winnerID {
 			winner = p
 		} else {
 			loser = p
 		}
+	}
+	if !hasWinner {
+		winner = rep.Header.Players[0]
 	}
 
 	engine := rep.Header.Engine.ShortName
@@ -188,10 +192,11 @@ func compileReplayInfo(out *os.File, rep *screp.Replay) map[string]interface{} {
 	d := rep.Header.Duration()
 
 	ctx := map[string]interface{}{
-		"winner": winner,
-		"loser":  loser,
-		"len":    d.String(),
-		"map":    mapName,
+		"winner":    winner,
+		"loser":     loser,
+		"len":       d.Truncate(time.Second).String(),
+		"map":       mapName,
+		"hasWinner": hasWinner,
 	}
 
 	return ctx

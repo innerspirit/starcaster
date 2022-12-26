@@ -68,7 +68,7 @@
         {{#each matches}}
             <div class="match">
                 {{winner.name}} <span class="race-{{race winner.race}}">{{race winner.race}}</span>
-                &gt; <span class="race-{{race loser.race}}">{{race loser.race}}</span> {{loser.name}}
+                {{#if hasWinner }}&gt;{{else}}={{/if}} <span class="race-{{race loser.race}}">{{race loser.race}}</span> {{loser.name}}
                 <br />
                 <span class="map">{{len}} on {{map}}</span>
             </div>

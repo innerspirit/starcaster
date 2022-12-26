@@ -23,22 +23,36 @@ const manifest = `
     ],
 
     mainWindow: {
-        width: 15%,
+        width: 300px,
         height: 1:1,
         title: "StarCaster",
         content: {
             type: ui.Layer,
             width: 100%,
-            height: 50%,
+            height: 100%,
             children: [
                 {
-                    widget: ui.Image,
-                    src: "starcaster.png",
-                    type: ui.Image,
-                    width: 100%,
-                    height: 1:1,
-                    margin: {top: 4wt, bottom: 3wt}
-                },
+                    type: ui.Column,
+                    width: 65%,
+                    height: 96%,
+                    margin: {left: 1wt, right: 1wt, top: 2px},
+                    align: {horizontal: center},
+                    children: [
+                        {
+                            src: "starcaster.png",
+                            type: ui.Image,
+                            width: 100%,
+                            height: 1:1,
+                            margin: {top: 4wt, bottom: 3wt}
+                        },{
+                            type: ui.Text,
+                            text: "Add a Browser Source in OBS with the URL as \"localhost:8080\".",
+                            font: {size: 15},
+                            textColor: #8b8b8b,
+                            margin: {bottom: 1wt},
+                        }
+                    ]
+                }
 
             ]
         }
