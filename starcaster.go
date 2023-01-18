@@ -37,8 +37,12 @@ type home struct {
 func main() {
 
 	m := http.NewServeMux()
+	// fs := http.FileServer(http.Dir("./public"))
+	// http.Handle("/", fs)
 
-	m.HandleFunc("/", testHandler)
+	// http.HandleFunc("/", serveFiles)
+
+	m.HandleFunc("/", serveFiles)
 	const addr = "localhost:8080"
 	srv := http.Server{
 		Handler:      m,
@@ -77,6 +81,16 @@ func NewHome(manifest nux.Attr) Home {
 	me.ComponentBase = nux.NewComponentBase(me, manifest)
 	nux.InflateLayout(me, me.layout(), nux.InflateStyle(me.style()))
 	return me
+}
+
+func serveFiles(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.Path)
+	p := "." + r.URL.Path
+	if p == "./" {
+		testHandler(w, r)
+		return
+	}
+	http.ServeFile(w, r, p)
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
