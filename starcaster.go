@@ -21,7 +21,8 @@ import (
 	"github.com/icza/screp/repparser"
 )
 
-const repPath = "C:\\Users\\Chris\\Documents\\StarCraft\\Maps\\Replays\\AutoSave\\"
+var userHome, _ = os.UserHomeDir()
+var repPath = userHome + "\\Documents\\StarCraft\\Maps\\Replays\\AutoSave\\"
 
 //go:embed last5.hbs
 var hbs string

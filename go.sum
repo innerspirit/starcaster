@@ -2,4 +2,9 @@ github.com/aymerick/raymond v2.0.2+incompatible h1:VEp3GpgdAnv9B2GFyTvqgcKvY+mfK
 github.com/aymerick/raymond v2.0.2+incompatible/go.mod h1:osfaiScAUVup+UC9Nfq76eWqDhXlp+4UYaA8uhTBO6g=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/icza/screp v1.9.1 h1:4iYrqbEfT+WHs29DO4FhIbKAzBLazGF1djhZGAO91fc=
+github.com/icza/screp v1.9.1/go.mod h1:8jnZn9u3XSB1no9SgMdjf6m6UuCRP+PxOyC6c3oLn50=
+golang.org/x/text v0.4.0 h1:BrVqGRd7+k1DiOgtnFvAkoQEWQvBc25ouMJM6429SFg=
+golang.org/x/text v0.4.0/go.mod h1:mrYo+phRRbMaCq/xk9113O4dZlRixOauAjOtrjsXDZ8=
+nuxui.org/nuxui v0.1.1 h1:XIpfkjXJcnoc7W0zpDTqDtmMrzCbRpW3oPSVsEXxxU4=
 nuxui.org/nuxui v0.1.1/go.mod h1:0ENLlWr8fL0N0K6OvRJJTkvFBi65kuUZjwMsi7OQ0Kk=
