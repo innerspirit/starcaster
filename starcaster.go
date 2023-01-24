@@ -112,56 +112,69 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 func getTopReplaysData() []map[string]interface{} {
 	var rdlist []map[string]interface{}
 
-	folder := getNewestFolder(repPath)
-	repfiles := getNewestFiles(repPath+folder, 5)
+	folders := getNewestFolders(repPath, 5)
+	repfiles := getNewestFiles(repPath, folders, 5)
 	for _, fpath := range repfiles {
-		repdata := getReplayData(repPath + folder + "\\" + fpath)
+		fmt.Println(repPath + "\\" + fpath)
+		repdata := getReplayData(repPath + "\\" + fpath)
 		rdlist = append(rdlist, repdata)
 	}
 	return rdlist
 }
 
-func getNewestFiles(path string, cnt int) []string {
+func getNewestFiles(path string, folders []string, cnt int) []string {
 	list := []string{}
 	i := 0
-	fmt.Println("reading file " + path)
-	f, _ := os.Open(path)
-	fis, _ := f.Readdir(-1)
-	f.Close()
-	sort.Sort(ByModTime(fis))
 
-	for _, fi := range fis {
-		fmt.Println("found file " + fi.Name())
-		if i >= cnt {
-			fmt.Println("too many files")
-			break
+out:
+	for _, fo := range folders {
+		fp := path + fo
+		fmt.Println("reading folder " + fp)
+		f, _ := os.Open(fp)
+		fis, _ := f.Readdir(-1)
+		f.Close()
+		sort.Sort(ByModTime(fis))
+
+		for _, fi := range fis {
+			fmt.Println("found file " + fi.Name())
+			if i >= cnt {
+				fmt.Println("too many files")
+				break out
+			}
+			if !fi.Mode().IsRegular() {
+				fmt.Println("not regular file")
+				continue
+			}
+			i++
+			list = append(list, fo+"\\"+fi.Name())
 		}
-		if !fi.Mode().IsRegular() {
-			fmt.Println("not regular file")
-			continue
-		}
-		i++
-		list = append(list, fi.Name())
 	}
 	return list
 }
 
-func getNewestFolder(path string) string {
+func getNewestFolders(path string, cnt int) []string {
+	list := []string{}
 	fmt.Println("reading folder " + path)
 	f, _ := os.Open(path)
 	fis, _ := f.Readdir(-1)
 	f.Close()
 	sort.Sort(ByModTime(fis))
+	i := 0
 
 	for _, fi := range fis {
+		if i >= cnt {
+			fmt.Println("too many folders")
+			break
+		}
+		i++
 		if fi.Mode().IsRegular() {
 			fmt.Println("not dir")
 			continue
 		}
 		fmt.Println("found dir " + fi.Name())
-		return fi.Name()
+		list = append(list, fi.Name())
 	}
-	return ""
+	return list
 }
 
 func getReplayData(fileName string) map[string]interface{} {
